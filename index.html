@@ -53,6 +53,8 @@
     .tab{flex:1;padding:10px;border:1px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;text-align:center;font-weight:600;user-select:none}
     .tab.active{background:var(--blue);color:#fff;border-color:var(--blue)}
 
+    /* Accents & Mini Card */
+    .chip{margin-left:6px;background:#eef2ff;color:#1d4ed8;border:1px solid #c7d2fe;padding:2px 6px;border-radius:9999px;font-size:.72rem;font-weight:700}
     .mini-card{background:#eef2ff;border:1px dashed var(--blue);border-radius:12px;padding:12px;margin-top:10px}
   </style>
 </head>
@@ -92,7 +94,7 @@
       <!-- CRI 계산기 (1.1) -->
       <div id="cri" class="calc-section" role="tabpanel">
         <div>
-          <label for="bagVol">백 용량 (mL)</label>
+          <label for="bagVol">백 용량 (mL) <span class="chip">입력</span></label>
           <input id="bagVol" type="number" step="1" value="250" />
           <div class="note"><strong>시작 속도 :</strong> 10 mL/h</div>
           <div class="note"><strong>시작 투여량 :</strong> 0.044 U/kg/h</div>
@@ -102,6 +104,14 @@
           <div class="box"><div class="label">백에 넣을 인슐린</div><div class="val"><span id="bagUnits" class="mono">-</span> U</div></div>
           <div class="box"><div class="label">용액 농도</div><div class="val"><span id="bagConc" class="mono">-</span> U/mL</div></div>
         </div>
+        <!-- 1.1 설명 노트 (요청하신 네 줄 복원) -->
+        <div class="note" style="margin-top:6px">
+          • 백용량은 기본 250 mL이며, 보호자 변경 가능.<br>
+          • 시작 속도는 10 mL/h로 고정, 투여량은 0.044 U/kg/h (1.1 기준)로 고정됩니다.<br>
+          • 백용량을 2배로 변경하면, 백에 넣을 인슐린(U)도 2배로 자동 증가하여 농도와 U/kg/h는 동일하게 유지됩니다.<br>
+          • 권장 조제: 0.9% NaCl 250 mL 기준 Regular insulin 1.1 × kg U. 조제 후 라인 흡착 보정을 위해 50 mL 폐기.
+        </div>
+        <!-- 변환 계산기 -->
         <div class="mini-card" id="conv11">
           <div style="font-weight:700;margin-bottom:6px">🔄 변환 계산기</div>
           <div class="grid cols-2">
@@ -120,7 +130,7 @@
       <!-- CRI 계산기 (2.2) -->
       <div id="cri2" class="calc-section" role="tabpanel" style="display:none">
         <div>
-          <label for="bagVol2">백 용량 (mL)</label>
+          <label for="bagVol2">백 용량 (mL) <span class="chip">입력</span></label>
           <input id="bagVol2" type="number" step="1" value="250" />
           <div class="note"><strong>시작 속도 :</strong> 10 mL/h</div>
           <div class="note"><strong>시작 투여량 :</strong> 0.088 U/kg/h</div>
@@ -131,6 +141,14 @@
           <div class="box"><div class="label">용액 농도</div><div class="val"><span id="bagConc2" class="mono">-</span> U/mL</div></div>
           <div class="box"><div class="label">실사용 가능 용량</div><div class="val"><span id="usableVol2" class="mono">-</span> mL</div></div>
         </div>
+        <!-- 2.2 설명 노트 (대응 내용) -->
+        <div class="note" style="margin-top:6px">
+          • 백용량은 기본 250 mL이며, 보호자 변경 가능.<br>
+          • 시작 속도는 10 mL/h로 고정, 투여량은 0.088 U/kg/h (2.2 기준)로 고정됩니다.<br>
+          • 백용량을 2배로 변경하면, 백에 넣을 인슐린(U)도 2배로 자동 증가하여 농도와 U/kg/h는 동일하게 유지됩니다.<br>
+          • 권장 조제: 0.9% NaCl 250 mL 기준 Regular insulin 2.2 × kg U. 조제 후 라인 흡착 보정을 위해 50 mL 폐기.
+        </div>
+        <!-- 변환 계산기 -->
         <div class="mini-card" id="conv22">
           <div style="font-weight:700;margin-bottom:6px">🔄 변환 계산기</div>
           <div class="grid cols-2">
@@ -230,13 +248,11 @@
     const bagVol = $('bagVol');
     const bagUnits = $('bagUnits');
     const bagConc = $('bagConc');
-    const bagDoseUkgh = $('bagDoseUkgh'); // not used visibly (fixed 0.044)
 
     // (2.2)
     const bagVol2 = $('bagVol2');
     const bagUnits2 = $('bagUnits2');
     const bagConc2 = $('bagConc2');
-    const bagDoseUkgh2 = $('bagDoseUkgh2'); // not used visibly (fixed 0.088)
     const usableVol2 = $('usableVol2');
 
     // Converters
@@ -245,7 +261,6 @@
     const rateMl2 = $('rateMl2');
     const rateUkgh2 = $('rateUkgh2');
 
-    // Core calcs
     function calcCRI(which){
       const w = num(bw.value);
       const V = num(which===1 ? bagVol.value : bagVol2.value);
@@ -261,14 +276,9 @@
       (which===1 ? bagUnits : bagUnits2).textContent = fmt(units, 2);
       (which===1 ? bagConc  : bagConc2 ).textContent = fmt(conc, 4);
       if(which===2 && usableVol2){ const waste=50; usableVol2.textContent = Math.max(V-waste,0).toFixed(0); }
-      // live-convert if user typed something
-      if(which===1){
-        if(rateMl1 && rateMl1.value) convMlToUkgh(1);
-        if(rateUkgh1 && rateUkgh1.value) convUkghToMl(1);
-      }else{
-        if(rateMl2 && rateMl2.value) convMlToUkgh(2);
-        if(rateUkgh2 && rateUkgh2.value) convUkghToMl(2);
-      }
+      // live conversions
+      if(which===1){ if(rateMl1 && rateMl1.value) convMlToUkgh(1); if(rateUkgh1 && rateUkgh1.value) convUkghToMl(1); }
+      else { if(rateMl2 && rateMl2.value) convMlToUkgh(2); if(rateUkgh2 && rateUkgh2.value) convUkghToMl(2); }
     }
 
     function currentConc(which){ return num(which===1 ? bagConc.textContent : bagConc2.textContent); }
@@ -302,7 +312,7 @@
     if(rateMl2) rateMl2.addEventListener('input', ()=>convMlToUkgh(2));
     if(rateUkgh2) rateUkgh2.addEventListener('input', ()=>convUkghToMl(2));
 
-    // BG table toggle (optional)
+    // BG table toggle
     const showTable = $('showTable');
     const bgTableWrap = document.getElementById('bgTableWrap');
     if(showTable && bgTableWrap){
