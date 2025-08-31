@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Feline DKA Insulin CRI Calculator</title>
+  <meta name="description" content="고양이 DKA 인슐린 CRI 계산기 (CRI/Intermittent 선택)" />
+  <style>
+    :root{
+      --blue:#1d4ed8; --bg:#f8fafc; --card:#ffffff; --border:#e5e7eb; --ink:#0f172a; --muted:#6b7280; --accent:#69b10d;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+    header{position:sticky;top:0;background:linear-gradient(180deg,#fff,rgba(255,255,255,.92));backdrop-filter:saturate(1.1) blur(8px);border-bottom:1px solid var(--border);z-index:10}
+    .wrap{max-width:880px;margin:0 auto;padding:14px}
+    h1{margin:4px 0 6px;font-size:1.22rem;color:var(--blue)}
+    .sub{color:var(--muted);font-size:.9rem}
+
+    .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px;margin:12px 0}
+    .title{font-weight:800;color:var(--blue);margin-bottom:8px;font-size:1.08rem}
+    label{font-size:.92rem;color:#111827}
+    input[type="number"], input[type="text"], select{width:100%;padding:12px;border:1px solid var(--border);border-radius:10px;font-size:1rem;background:#fff}
+    .grid{display:grid;gap:10px}
+    .cols-2{grid-template-columns:1fr 1fr}
+    .cols-3{grid-template-columns:1fr 1fr 1fr}
+    @media (max-width:720px){
+      .cols-2,.cols-3{grid-template-columns:1fr}
+      .compact-2{grid-template-columns:minmax(120px,1fr) minmax(120px,1fr)!important}
+    }
+    .compact-2{grid-template-columns:minmax(160px,1fr) minmax(160px,1fr); justify-content:flex-start}
+    .compact-2>div{max-width:240px}
+
+    .kpi{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .kpi .box{background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:10px}
+    .kpi .label{font-size:.86rem;color:var(--muted)}
+    .kpi .val{font-size:1.06rem;font-weight:800}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+
+    .note{font-size:.9rem;color:var(--muted)}
+    .hr{border-top:1px dashed var(--border);margin:10px 0}
+
+    table{width:100%;border-collapse:collapse}
+    th,td{border:1px solid var(--border);padding:8px 10px;font-size:.92rem;text-align:center}
+    th{background:#f1f5f9}
+    .hl{background:#fef9c3}
+
+    .ok{background:#f0fdf4;border:1px solid #bbf7d0;color:#14532d;border-radius:10px;padding:8px 10px}
+
+    .tabs{display:flex;gap:8px;margin-bottom:10px}
+    .tab{flex:1;padding:10px;border:1px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;text-align:center;font-weight:600;user-select:none}
+    .tab.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+
+    /* 미니 계산기 */
+    .mini{border:2px solid var(--blue); border-radius:12px; padding:12px; background:#fbfdff; margin-top:8px}
+    .mini label{font-weight:600}
+    .mini input[readonly]{background:#f8fafc}
+    .chip{display:inline-block;padding:4px 8px;border:1px solid var(--blue);border-radius:999px;font-size:.8rem;color:var(--blue);background:#eef4ff}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>🐈‍⬛ Feline DKA Insulin Calculator</h1>
+      <div class="sub">(심한 탈수환자: 인슐린 CRI 시작 전 2~4시간에 걸쳐 결핍량의 약 50%를 먼저 교정하세요.)</div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- 1) 기본 입력 -->
+    <section class="card">
+      <div class="title">1) 기본 입력</div>
+      <div class="grid cols-2 compact-2">
+        <div>
+          <label for="bw">체중 (kg)</label>
+          <input id="bw" type="number" inputmode="decimal" step="0.01" min="0" placeholder="*필수입력" />
+        </div>
+        <div>
+          <label for="name">이름 (선택)</label>
+          <input id="name" type="text" placeholder="선택 입력" />
+        </div>
+      </div>
+    </section>
+
+    <!-- 2) 인슐린 투여 방식 선택 -->
+    <section class="card">
+      <div class="title">2) 인슐린 투여 방식 선택</div>
+      <div class="tabs" role="tablist" aria-label="투여 방식 선택">
+        <div class="tab active" data-tab="cri" role="tab" aria-selected="true">CRI 방식 (1.1 iu/kg)</div>
+        <div class="tab" data-tab="cri2" role="tab" aria-selected="false">CRI 방식 (2.2 iu/kg)</div>
+        <div class="tab" data-tab="intermittent" role="tab" aria-selected="false">Intermittent injection</div>
+      </div>
+
+      <!-- CRI 계산기 (1.1) -->
+      <div id="cri" class="calc-section" role="tabpanel">
+        <div class="grid cols-2">
+          <div>
+            <label for="bagVol">백 용량 (mL)</label>
+            <input id="bagVol" type="number" step="1" value="250" />
+          </div>
+          <div>
+            <label for="bagRate">시작 속도 (mL/h)</label>
+            <input id="bagRate" type="number" step="0.5" value="10" />
+          </div>
+        </div>
+        <div class="hr"></div>
+        <div class="kpi">
+          <div class="box"><div class="label">백에 넣을 인슐린</div><div class="val"><span id="bagUnits" class="mono">-</span> U</div></div>
+          <div class="box"><div class="label">용액 농도</div><div class="val"><span id="bagConc" class="mono">-</span> U/mL</div></div>
+          <div class="box"><div class="label">시작 투여량</div><div class="val"><span id="bagDoseUkgh" class="mono">-</span> U/kg/h</div></div>
+        </div>
+        <div class="hr"></div>
+        <div class="grid cols-2 mini" id="conv11">
+          <div>
+            <label>변환: mL/h → U/kg/h</label>
+            <input id="rateMl1" type="number" step="0.1" placeholder="mL/h 입력" />
+          </div>
+          <div>
+            <label>변환: U/kg/h → mL/h</label>
+            <input id="rateUkgh1" type="number" step="0.001" placeholder="U/kg/h 입력" />
+          </div>
+        </div>
+        <div class="note" style="margin-top:6px">
+          권장: 0.9% NaCl <span class="mono">250 mL</span> + Regular insulin <span class="mono">1.1 × kg</span> U (필요 시 2.2×) 혼합.<br>
+          초기 <span class="mono">10 mL/h ≈ 0.05 U/kg/h</span> (체중 의존).<br>
+          조제 후 라인 흡착 보정을 위해 <span class="mono">50 mL</span> 폐기.
+        </div>
+      </div>
+
+      <!-- CRI 계산기 (2.2) -->
+      <div id="cri2" class="calc-section" role="tabpanel" style="display:none">
+        <div class="grid cols-2">
+          <div>
+            <label for="bagVol2">백 용량 (mL)</label>
+            <input id="bagVol2" type="number" step="1" value="250" />
+          </div>
+          <div>
+            <label for="bagRate2">초기 속도 (mL/h)</label>
+            <input id="bagRate2" type="number" step="0.5" value="10" />
+          </div>
+        </div>
+        <div class="hr"></div>
+        <div class="kpi">
+          <div class="box"><div class="label">백에 넣을 인슐린</div><div class="val"><span id="bagUnits2" class="mono">-</span> U</div></div>
+          <div class="box"><div class="label">용액 농도</div><div class="val"><span id="bagConc2" class="mono">-</span> U/mL</div></div>
+          <div class="box"><div class="label">초기 투여량</div><div class="val"><span id="bagDoseUkgh2" class="mono">-</span> U/kg/h</div></div>
+          <div class="box"><div class="label">실사용 가능 용량</div><div class="val"><span id="usableVol2" class="mono">-</span> mL</div></div>
+        </div>
+        <div class="hr"></div>
+        <div class="grid cols-2 mini" id="conv22">
+          <div>
+            <label>변환: mL/h → U/kg/h</label>
+            <input id="rateMl2" type="number" step="0.1" placeholder="mL/h 입력" />
+          </div>
+          <div>
+            <label>변환: U/kg/h → mL/h</label>
+            <input id="rateUkgh2" type="number" step="0.001" placeholder="U/kg/h 입력" />
+          </div>
+        </div>
+        <div class="note" style="margin-top:6px">
+          권장: 0.9% NaCl <span class="mono">250 mL</span> + Regular insulin <span class="mono">2.2 × kg</span> U 혼합.<br>
+          초기 <span class="mono">10 mL/h ≈ 0.1 U/kg/h</span> (체중 의존).<br>
+          조제 후 라인 흡착 보정을 위해 <span class="mono">50 mL</span> 폐기.
+        </div>
+      </div>
+
+      <!-- Intermittent 안내 -->
+      <div id="intermittent" class="calc-section" role="tabpanel" style="display:none">
+        <h3 style="margin:6px 0;color:var(--blue)">Intermittent injection</h3>
+        <p class="note">1) 0.2 U/kg IV/IM initial<br>
+        2) 이후 0.1 U/kg IV/IM q1h (BG ≥14 mmol/L)<br>
+        3) BG &lt;14 mmol/L 시: 0.1–0.3 U/kg q4–6h</p>
+      </div>
+    </section>
+
+    <!-- Mini 변환기 별도 -->
+    <section class="card">
+      <div class="title">미니 계산기</div>
+      <div class="mini">
+        <div class="note" style="margin-bottom:8px">
+          <span id="miniConcBadge" class="chip">현재 농도: - U/mL</span>
+        </div>
+        <p><strong>속도→투여량 변환 (mL/h → U/kg/h)</strong></p>
+        <div class="grid cols-2">
+          <div>
+            <label>mL/h</label>
+            <input id="miniRateMl" type="number" step="0.1" placeholder="mL/h 입력" />
+          </div>
+          <div>
+            <label>= U/kg/h</label>
+            <input id="miniRateUkghOut" type="text" readonly />
+          </div>
+        </div>
+        <p><strong>투여량→속도 변환 (U/kg/h → mL/h)</strong></p>
+        <div class="grid cols-2">
+          <div>
+            <label>U/kg/h</label>
+            <input id="miniUkgh" type="number" step="0.001" placeholder="U/kg/h 입력" />
+          </div>
+          <div>
+            <label>= mL/h</label>
+            <input id="miniRateMlOut" type="text" readonly />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3) BG 기반 힌트 & 속도표 -->
+    <section class="card">
+      <div class="title" style="display:flex;justify-content:space-between;align-items:center">
+        <span>3) BG 기반 힌트 / 속도표</span>
+        <label class="toggle" style="display:flex;align-items:center;gap:6px">
+          <input id="showTable" type="checkbox" checked>
+          <span class="note">표 보이기</span>
+        </label>
+      </div>
+      <div id="bgAdvice" class="ok" style="display:none;margin-bottom:8px"></div>
+      <div id="bgTableWrap">
+        <table>
+          <thead><tr><th>Blood glucose (mg/dL)</th><th>Insulin CRI rate</th><th>Dextrose (conc)</th></tr></thead>
+          <tbody>
+            <tr><td>&gt;350</td><td>10 mL/h</td><td>0%</td></tr>
+            <tr><td>250–350</td><td>7 mL/h</td><td>0%</td></tr>
+            <tr><td>200–250</td><td>5 mL/h</td><td>0%</td></tr>
+            <tr><td>150–200</td><td>3 mL/h</td><td>0%</td></tr>
+            <tr class="hl"><td>100–150</td><td>1 mL/h</td><td>2.5%</td></tr>
+            <tr class="hl"><td>&lt;100</td><td>Stop</td><td>5%</td></tr>
+          </tbody>
+        </table>
+        <div class="note" style="margin-top:6px">노란 칸: 환자 alert & 자발 식사 가능 → CRI 중단 고려.</div>
+      </div>
+      <div class="note" style="margin-top:8px">목표 BG 150~250 mg/dL, 시간당 하강폭 50~100 mg/dL 이내. 필요 시 2.5~5% 포도당 병용.</div>
+    </section>
+
+    <!-- 4) 전해질 보정 -->
+    <section class="card">
+      <div class="title">4) 전해질 보정 (K⁺)</div>
+      <table>
+        <thead><tr><th>Serum K⁺ (mmol/L)</th><th>KCl (mmol/L, 0.9% NaCl에 추가)</th></tr></thead>
+        <tbody>
+          <tr><td>&lt;2.0</td><td>80 mmol</td></tr>
+          <tr><td>2.0–2.5</td><td>60 mmol</td></tr>
+          <tr><td>2.5–3.0</td><td>40 mmol</td></tr>
+          <tr><td>3.0–3.5</td><td>30 mmol</td></tr>
+        </tbody>
+      </table>
+      <div class="note" style="margin-top:6px">K 보충 속도 ≤ 0.5 mmol/kg/h. P, Mg 보정 병행.</div>
+    </section>
+
+    <!-- 5) 메모 -->
+    <section class="card">
+      <div class="title">메모</div>
+      <ul class="note" style="margin:8px 0 0 18px">
+        <li>CRI 속도는 절대 기준이 아닌 가이드라인입니다. 환자 상태에 맞춰 조절해주세요.</li>
+        <li>인슐린 CRI 용액은 24시간마다 새로 교체해주세요.</li>
+       </ul>
+    </section>
+  </main>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const num = v => { const x = parseFloat(v); return isNaN(x) ? NaN : x; };
+
+    // ===== Elements =====
+    const bw=$('bw');
+    const bagVol=$('bagVol'), bagRate=$('bagRate');
+    const bagUnits=$('bagUnits'), bagConc=$('bagConc'), bagDoseUkgh=$('bagDoseUkgh');
+
+    const bagVol2=$('bagVol2'), bagRate2=$('bagRate2');
+    const bagUnits2=$('bagUnits2'), bagConc2=$('bagConc2'), bagDoseUkgh2=$('bagDoseUkgh2'), usableVol2=$('usableVol2');
+
+    // ===== CRI 1.1 calc =====
+    function calcBag(){
+      const w=num(bw.value), V=num(bagVol.value), rate=num(bagRate.value);
+      if(isNaN(w)||isNaN(V)||V<=0){
+        bagUnits.textContent=bagConc.textContent=bagDoseUkgh.textContent='-'; return;
+      }
+      const units=1.1*w;
+      const conc=units/V;
+      const ukgh=isNaN(rate)?NaN:(conc*rate)/w;
+      bagUnits.textContent=units.toFixed(2);
+      bagConc.textContent=conc.toFixed(4);
+      bagDoseUkgh.textContent=isNaN(ukgh)?'-':ukgh.toFixed(2);
+    }
+    [bw,bagVol,bagRate].forEach(el=>el.addEventListener('input',calcBag));
+    calcBag();
+
+    // ===== CRI 2.2 calc =====
+    function calcBag2(){
+      const w=num(bw.value), V=num(bagVol2.value), rate=num(bagRate2.value);
+      if(isNaN(w)||isNaN(V)||V<=0){
+        bagUnits2.textContent=bagConc2.textContent=bagDoseUkgh2.textContent=usableVol2.textContent='-'; return;
+      }
+      const units=2.2*w;
+      const conc=units/V;
+      const ukgh=isNaN(rate)?NaN:(conc*rate)/w;
+      bagUnits2.textContent=units.toFixed(2);
+      bagConc2.textContent=conc.toFixed(4);
+      bagDoseUkgh2.textContent=isNaN(ukgh)?'-':ukgh.toFixed(2);
+      const waste=50;
+      usableVol2.textContent=Math.max(V-waste,0).toFixed(0);
+    }
+    if(bagVol2 && bagRate2){
+      [bw,bagVol2,bagRate2].forEach(el=>el.addEventListener('input',calcBag2));
+      calcBag2();
+    }
+
+    // ===== Tabs =====
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected','false'); });
+        tab.classList.add('active');
+        tab.setAttribute('aria-selected','true');
+        const selected = tab.getAttribute('data-tab');
+        document.querySelectorAll('.calc-section').forEach(sec => sec.style.display='none');
+        document.getElementById(selected).style.display='block';
+        // Recompute mini-conc badge and outputs
+        updateMiniConcBadge(); fromMiniMl(); fromMiniUkgh();
+      });
+    });
+
+    // ===== Show/hide BG table =====
+    const showTable = $('showTable');
+    const bgTableWrap = $('bgTableWrap');
+    if(showTable){
+      showTable.addEventListener('change',()=>{
+        bgTableWrap.style.display = showTable.checked ? 'block' : 'none';
+      });
+    }
+
+    // ===== In-tab mini converters =====
+    const rateMl1 = $('rateMl1'); const rateUkgh1 = $('rateUkgh1');
+    let lock1=false;
+    function fromMl1(){
+      if(lock1) return; lock1=true;
+      const w=num(bw.value), ml=num(rateMl1.value), V=num(bagVol.value);
+      const c=(isNaN(w)||isNaN(V)||V<=0)?NaN:(1.1*w)/V;
+      const ukgh = (isNaN(w)||w<=0||isNaN(ml)||isNaN(c)) ? NaN : (c*ml)/w;
+      rateUkgh1.value = isNaN(ukgh)? '' : ukgh.toFixed(2);
+      lock1=false;
+    }
+    function fromUkgh1(){
+      if(lock1) return; lock1=true;
+      const w=num(bw.value), ukgh=num(rateUkgh1.value), V=num(bagVol.value);
+      const c=(isNaN(w)||isNaN(V)||V<=0)?NaN:(1.1*w)/V;
+      const ml = (isNaN(w)||w<=0||isNaN(ukgh)||isNaN(c)||c===0) ? NaN : (ukgh*w)/c;
+      rateMl1.value = isNaN(ml)? '' : ml.toFixed(1);
+      lock1=false;
+    }
+    if(rateMl1 && rateUkgh1){
+      rateMl1.addEventListener('input', fromMl1);
+      rateUkgh1.addEventListener('input', fromUkgh1);
+      [bw, bagVol].forEach(el=> el.addEventListener('input', ()=>{
+        if(rateMl1.value!=='') fromMl1(); else if(rateUkgh1.value!=='') fromUkgh1();
+      }));
+    }
+
+    const rateMl2 = $('rateMl2'); const rateUkgh2 = $('rateUkgh2');
+    let lock2=false;
+    function fromMl2(){
+      if(lock2) return; lock2=true;
+      const w=num(bw.value), ml=num(rateMl2.value), V=num(bagVol2.value);
+      const c=(isNaN(w)||isNaN(V)||V<=0)?NaN:(2.2*w)/V;
+      const ukgh = (isNaN(w)||w<=0||isNaN(ml)||isNaN(c)) ? NaN : (c*ml)/w;
+      rateUkgh2.value = isNaN(ukgh)? '' : ukgh.toFixed(2);
+      lock2=false;
+    }
+    function fromUkgh2(){
+      if(lock2) return; lock2=true;
+      const w=num(bw.value), ukgh=num(rateUkgh2.value), V=num(bagVol2.value);
+      const c=(isNaN(w)||isNaN(V)||V<=0)?NaN:(2.2*w)/V;
+      const ml = (isNaN(w)||w<=0||isNaN(ukgh)||isNaN(c)||c===0) ? NaN : (ukgh*w)/c;
+      rateMl2.value = isNaN(ml)? '' : ml.toFixed(1);
+      lock2=false;
+    }
+    if(rateMl2 && rateUkgh2){
+      rateMl2.addEventListener('input', fromMl2);
+      rateUkgh2.addEventListener('input', fromUkgh2);
+      [bw, bagVol2].forEach(el=> el.addEventListener('input', ()=>{
+        if(rateMl2.value!=='') fromMl2(); else if(rateUkgh2.value!=='') fromUkgh2();
+      }));
+    }
+
+    // ===== Separate mini calculator (based on active CRI) =====
+    const miniRateMl = $('miniRateMl');
+    const miniRateUkghOut = $('miniRateUkghOut');
+    const miniUkgh = $('miniUkgh');
+    const miniRateMlOut = $('miniRateMlOut');
+    const miniConcBadge = $('miniConcBadge');
+
+    function activeTabConc(){
+      const active = document.querySelector('.tab.active');
+      const tab = active ? active.getAttribute('data-tab') : 'cri';
+      const w = num(bw.value);
+      if(isNaN(w) || w<=0) return NaN;
+      if(tab==='cri2'){
+        const V = num(bagVol2?.value);
+        if(isNaN(V)||V<=0) return NaN;
+        return (2.2*w)/V; // U/mL
+      } else { // default cri (1.1)
+        const V = num(bagVol?.value);
+        if(isNaN(V)||V<=0) return NaN;
+        return (1.1*w)/V; // U/mL
+      }
+    }
+
+    function updateMiniConcBadge(){
+      const c = activeTabConc();
+      if(!miniConcBadge) return;
+      miniConcBadge.textContent = isNaN(c) ? '현재 농도: - U/mL' : `현재 농도: ${c.toFixed(4)} U/mL (${document.querySelector('.tab.active')?.dataset.tab==='cri2'?'CRI 2.2×':'CRI 1.1×'})`;
+    }
+
+    function fromMiniMl(){
+      const c = activeTabConc();
+      const w = num(bw.value);
+      const ml = num(miniRateMl.value);
+      const ukgh = (isNaN(c)||isNaN(w)||w<=0||isNaN(ml)) ? NaN : (c*ml)/w;
+      miniRateUkghOut.value = isNaN(ukgh)? '' : ukgh.toFixed(2);
+      updateMiniConcBadge();
+    }
+    function fromMiniUkgh(){
+      const c = activeTabConc();
+      const w = num(bw.value);
+      const ukgh = num(miniUkgh.value);
+      const ml = (isNaN(c)||c===0||isNaN(w)||w<=0||isNaN(ukgh)) ? NaN : (ukgh*w)/c;
+      miniRateMlOut.value = isNaN(ml)? '' : ml.toFixed(1);
+      updateMiniConcBadge();
+    }
+
+    miniRateMl?.addEventListener('input', fromMiniMl);
+    miniUkgh?.addEventListener('input', fromMiniUkgh);
+
+    [bw, bagVol, bagVol2].forEach(el=>{
+      if(el) el.addEventListener('input', ()=>{ updateMiniConcBadge(); if(miniRateMl.value!=='') fromMiniMl(); if(miniUkgh.value!=='') fromMiniUkgh(); });
+    });
+
+    // 초기 배지 세팅
+    updateMiniConcBadge();
+  </script>
+</body>
+</html>
