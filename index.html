@@ -8,7 +8,7 @@
   <meta name="description" content="고양이 DKA 인슐린 CRI 계산기 (CRI/Intermittent 선택)" />
   <style>
     :root{
-      --blue:#1d4ed8; --bg:#f8fafc; --card:#ffffff; --border:#e5e7eb; --ink:#0f172a; --muted:#6b7280; --accent:#69b10d;
+      --blue:#1d4ed8; --bg:#f8fafc; --card:#ffffff; --border:#e5e7eb; --ink:#0f172a; --muted:#6b7280; --accent:#69b10d; --highlight:#ef4444;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
@@ -21,7 +21,7 @@
     .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px;margin:12px 0}
     .title{font-weight:800;color:var(--blue);margin-bottom:8px;font-size:1.08rem}
     label{font-size:.92rem;color:#111827}
-    input[type="number"], input[type="text"], select{width:100%;padding:12px;border:1px solid var(--border);border-radius:10px;font-size:1rem;background:#fff}
+    input[type="number"], input[type="text"], select{width:100%;padding:12px;border:2px solid var(--blue);border-radius:10px;font-size:1rem;background:#fff}
     .grid{display:grid;gap:10px}
     .cols-2{grid-template-columns:1fr 1fr}
     .cols-3{grid-template-columns:1fr 1fr 1fr}
@@ -35,10 +35,11 @@
     .kpi{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     .kpi .box{background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:10px}
     .kpi .label{font-size:.86rem;color:var(--muted)}
-    .kpi .val{font-size:1.06rem;font-weight:800}
+    .kpi .val{font-size:1.1rem;font-weight:800;color:var(--highlight)}
     .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
 
     .note{font-size:.9rem;color:var(--muted)}
+    .note strong{color:var(--blue);font-weight:700}
     .hr{border-top:1px dashed var(--border);margin:10px 0}
 
     table{width:100%;border-collapse:collapse}
@@ -52,7 +53,7 @@
     .tab{flex:1;padding:10px;border:1px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;text-align:center;font-weight:600;user-select:none}
     .tab.active{background:var(--blue);color:#fff;border-color:var(--blue)}
 
-    .mini-card{background:#f9fafb;border:1px dashed var(--border);border-radius:12px;padding:10px;margin-top:8px}
+    .mini-card{background:#eef2ff;border:1px dashed var(--blue);border-radius:12px;padding:12px;margin-top:10px}
   </style>
 </head>
 <body>
@@ -93,16 +94,16 @@
         <div>
           <label for="bagVol">백 용량 (mL)</label>
           <input id="bagVol" type="number" step="1" value="250" />
-          <div class="note">시작 속도 : 10 mL/h</div>
+          <div class="note"><strong>시작 속도 :</strong> 10 mL/h</div>
+          <div class="note"><strong>시작 투여량 :</strong> 0.044 U/kg/h</div>
         </div>
         <div class="hr"></div>
         <div class="kpi">
           <div class="box"><div class="label">백에 넣을 인슐린</div><div class="val"><span id="bagUnits" class="mono">-</span> U</div></div>
           <div class="box"><div class="label">용액 농도</div><div class="val"><span id="bagConc" class="mono">-</span> U/mL</div></div>
-          <div class="box"><div class="label">시작 투여량</div><div class="val"><span id="bagDoseUkgh" class="mono">0.044</span> U/kg/h</div></div>
         </div>
         <div class="mini-card" id="conv11">
-          <strong style="display:block;margin-bottom:6px">🔄 변환 계산기</strong>
+          <div style="font-weight:700;margin-bottom:6px">🔄 변환 계산기</div>
           <div class="grid cols-2">
             <div>
               <label>변환: mL/h → U/kg/h</label>
@@ -114,12 +115,6 @@
             </div>
           </div>
         </div>
-        <div class="note" style="margin-top:6px">
-          • 백용량은 기본 250 mL이며, 보호자 변경 가능.<br>
-          • 시작 속도는 <span class="mono">10 mL/h</span>로 고정, 투여량은 <span class="mono">0.044 U/kg/h</span> (1.1 기준)로 고정됩니다.<br>
-          • 백용량을 2배로 변경하면, 백에 넣을 인슐린(U)도 2배로 자동 증가하여 농도와 U/kg/h는 동일하게 유지됩니다.<br>
-          • 권장 조제: 0.9% NaCl <span class="mono">250 mL</span> 기준 Regular insulin <span class="mono">1.1 × kg</span> U. 조제 후 라인 흡착 보정을 위해 <span class="mono">50 mL</span> 폐기.
-        </div>
       </div>
 
       <!-- CRI 계산기 (2.2) -->
@@ -127,17 +122,17 @@
         <div>
           <label for="bagVol2">백 용량 (mL)</label>
           <input id="bagVol2" type="number" step="1" value="250" />
-          <div class="note">시작 속도 : 10 mL/h</div>
+          <div class="note"><strong>시작 속도 :</strong> 10 mL/h</div>
+          <div class="note"><strong>시작 투여량 :</strong> 0.088 U/kg/h</div>
         </div>
         <div class="hr"></div>
         <div class="kpi">
           <div class="box"><div class="label">백에 넣을 인슐린</div><div class="val"><span id="bagUnits2" class="mono">-</span> U</div></div>
           <div class="box"><div class="label">용액 농도</div><div class="val"><span id="bagConc2" class="mono">-</span> U/mL</div></div>
-          <div class="box"><div class="label">초기 투여량</div><div class="val"><span id="bagDoseUkgh2" class="mono">0.088</span> U/kg/h</div></div>
           <div class="box"><div class="label">실사용 가능 용량</div><div class="val"><span id="usableVol2" class="mono">-</span> mL</div></div>
         </div>
         <div class="mini-card" id="conv22">
-          <strong style="display:block;margin-bottom:6px">🔄 변환 계산기</strong>
+          <div style="font-weight:700;margin-bottom:6px">🔄 변환 계산기</div>
           <div class="grid cols-2">
             <div>
               <label>변환: mL/h → U/kg/h</label>
@@ -148,12 +143,6 @@
               <input id="rateUkgh2" type="number" step="0.001" placeholder="U/kg/h 입력" />
             </div>
           </div>
-        </div>
-        <div class="note" style="margin-top:6px">
-          • 백용량은 기본 250 mL이며, 보호자 변경 가능.<br>
-          • 시작 속도는 <span class="mono">10 mL/h</span>로 고정, 투여량은 <span class="mono">0.088 U/kg/h</span> (2.2 기준)로 고정됩니다.<br>
-          • 백용량을 2배로 변경하면, 백에 넣을 인슐린(U)도 2배로 자동 증가하여 농도와 U/kg/h는 동일하게 유지됩니다.<br>
-          • 권장 조제: 0.9% NaCl <span class="mono">250 mL</span> 기준 Regular insulin <span class="mono">2.2 × kg</span> U. 조제 후 라인 흡착 보정을 위해 <span class="mono">50 mL</span> 폐기.
         </div>
       </div>
 
@@ -221,6 +210,7 @@
   <script>
     const $ = id => document.getElementById(id);
     const num = v => { const x = parseFloat(v); return isNaN(x) ? NaN : x; };
+    const fmt = (x, d=3) => (isFinite(x) ? x.toFixed(d) : '-');
 
     // Tabs
     document.querySelectorAll('.tab').forEach(tab => {
@@ -233,18 +223,20 @@
       });
     });
 
-    // Elements (1.1)
+    // Elements (shared)
     const bw = $('bw');
+
+    // (1.1)
     const bagVol = $('bagVol');
     const bagUnits = $('bagUnits');
     const bagConc = $('bagConc');
-    const bagDoseUkgh = $('bagDoseUkgh');
+    const bagDoseUkgh = $('bagDoseUkgh'); // not used visibly (fixed 0.044)
 
-    // Elements (2.2)
+    // (2.2)
     const bagVol2 = $('bagVol2');
     const bagUnits2 = $('bagUnits2');
     const bagConc2 = $('bagConc2');
-    const bagDoseUkgh2 = $('bagDoseUkgh2');
+    const bagDoseUkgh2 = $('bagDoseUkgh2'); // not used visibly (fixed 0.088)
     const usableVol2 = $('usableVol2');
 
     // Converters
@@ -253,84 +245,74 @@
     const rateMl2 = $('rateMl2');
     const rateUkgh2 = $('rateUkgh2');
 
-    function format(x, d=3){ return (isFinite(x) ? x.toFixed(d) : '-'); }
-
-    // Spec:
-    // U(백) = (1.1 또는 2.2) * 체중 * (백용량/250)
-    // 농도 = U / 백용량
-    // U/kg/h (표시용) = 1.1/25 (=0.044) 또는 2.2/25 (=0.088)  [10 mL/h 고정 전제]
-    function calcBag(){
-      const w = num(bw.value), V = num(bagVol.value);
-      if(isNaN(w)||isNaN(V)||V<=0){
-        bagUnits.textContent = bagConc.textContent = '-';
-        bagDoseUkgh.textContent = '0.044';
+    // Core calcs
+    function calcCRI(which){
+      const w = num(bw.value);
+      const V = num(which===1 ? bagVol.value : bagVol2.value);
+      if(!(w>0) || !(V>0)){
+        (which===1 ? bagUnits : bagUnits2).textContent = '-';
+        (which===1 ? bagConc  : bagConc2 ).textContent = '-';
+        if(which===2 && usableVol2) usableVol2.textContent = '-';
         return;
       }
-      const units = 1.1 * w * (V/250);
+      const factor = (which===1 ? 1.1 : 2.2);
+      const units = factor * w * (V/250);
       const conc  = units / V;
-      bagUnits.textContent = format(units, 2);
-      bagConc.textContent  = format(conc, 4);
-      bagDoseUkgh.textContent = '0.044';
-      // Update converter 1.1 live
-      if(rateMl1 && rateMl1.value) convMlToUkgh(1);
-      if(rateUkgh1 && rateUkgh1.value) convUkghToMl(1);
-    }
-
-    function calcBag2(){
-      const w = num(bw.value), V = num(bagVol2.value);
-      if(isNaN(w)||isNaN(V)||V<=0){
-        if(bagUnits2) bagUnits2.textContent = '-';
-        if(bagConc2)  bagConc2.textContent  = '-';
-        if(bagDoseUkgh2) bagDoseUkgh2.textContent = '0.088';
-        if(usableVol2) usableVol2.textContent = '-';
-        return;
+      (which===1 ? bagUnits : bagUnits2).textContent = fmt(units, 2);
+      (which===1 ? bagConc  : bagConc2 ).textContent = fmt(conc, 4);
+      if(which===2 && usableVol2){ const waste=50; usableVol2.textContent = Math.max(V-waste,0).toFixed(0); }
+      // live-convert if user typed something
+      if(which===1){
+        if(rateMl1 && rateMl1.value) convMlToUkgh(1);
+        if(rateUkgh1 && rateUkgh1.value) convUkghToMl(1);
+      }else{
+        if(rateMl2 && rateMl2.value) convMlToUkgh(2);
+        if(rateUkgh2 && rateUkgh2.value) convUkghToMl(2);
       }
-      const units = 2.2 * w * (V/250);
-      const conc  = units / V;
-      if(bagUnits2) bagUnits2.textContent = format(units, 2);
-      if(bagConc2)  bagConc2.textContent  = format(conc, 4);
-      if(bagDoseUkgh2) bagDoseUkgh2.textContent = '0.088';
-      if(usableVol2){ const waste=50; usableVol2.textContent = Math.max(V-waste,0).toFixed(0); }
-      // Update converter 2.2 live
-      if(rateMl2 && rateMl2.value) convMlToUkgh(2);
-      if(rateUkgh2 && rateUkgh2.value) convUkghToMl(2);
     }
 
-    function currentConc(which){
-      return which===1 ? num(bagConc.textContent) : num(bagConc2.textContent);
-    }
-    function weight(){ return num(bw.value); }
+    function currentConc(which){ return num(which===1 ? bagConc.textContent : bagConc2.textContent); }
 
     function convMlToUkgh(which){
-      const w = weight(); const conc = currentConc(which);
+      const w = num(bw.value), conc = currentConc(which);
       const input = which===1 ? rateMl1 : rateMl2;
-      const outEl = which===1 ? rateUkgh1 : rateUkgh2;
+      const out   = which===1 ? rateUkgh1 : rateUkgh2;
       const mlh = num(input.value);
-      if(isNaN(w)||w<=0||isNaN(conc)||conc<=0||isNaN(mlh)){ outEl.value=''; return; }
+      if(!(w>0) || !(conc>0) || !(mlh>=0)){ out.value=''; return; }
       const ukgh = (mlh * conc) / w;
-      outEl.value = ukgh.toFixed(3);
+      out.value = ukgh.toFixed(3);
     }
     function convUkghToMl(which){
-      const w = weight(); const conc = currentConc(which);
+      const w = num(bw.value), conc = currentConc(which);
       const input = which===1 ? rateUkgh1 : rateUkgh2;
-      const outEl = which===1 ? rateMl1 : rateMl2;
+      const out   = which===1 ? rateMl1   : rateMl2;
       const ukgh = num(input.value);
-      if(isNaN(w)||w<=0||isNaN(conc)||conc<=0||isNaN(ukgh)){ outEl.value=''; return; }
+      if(!(w>0) || !(conc>0) || !(ukgh>=0)){ out.value=''; return; }
       const mlh = (ukgh * w) / conc;
-      outEl.value = mlh.toFixed(1);
+      out.value = mlh.toFixed(1);
     }
 
-    // Event bindings
-    if(bw){ bw.addEventListener('input', ()=>{ calcBag(); calcBag2(); }); }
-    if(bagVol){ bagVol.addEventListener('input', calcBag); }
-    if(bagVol2){ bagVol2.addEventListener('input', calcBag2); }
-    if(rateMl1){ rateMl1.addEventListener('input', ()=>convMlToUkgh(1)); }
-    if(rateUkgh1){ rateUkgh1.addEventListener('input', ()=>convUkghToMl(1)); }
-    if(rateMl2){ rateMl2.addEventListener('input', ()=>convMlToUkgh(2)); }
-    if(rateUkgh2){ rateUkgh2.addEventListener('input', ()=>convUkghToMl(2)); }
+    // Events
+    if(bw) bw.addEventListener('input', ()=>{ calcCRI(1); calcCRI(2); });
+    if(bagVol) bagVol.addEventListener('input', ()=>calcCRI(1));
+    if(bagVol2) bagVol2.addEventListener('input', ()=>calcCRI(2));
+
+    if(rateMl1) rateMl1.addEventListener('input', ()=>convMlToUkgh(1));
+    if(rateUkgh1) rateUkgh1.addEventListener('input', ()=>convUkghToMl(1));
+    if(rateMl2) rateMl2.addEventListener('input', ()=>convMlToUkgh(2));
+    if(rateUkgh2) rateUkgh2.addEventListener('input', ()=>convUkghToMl(2));
+
+    // BG table toggle (optional)
+    const showTable = $('showTable');
+    const bgTableWrap = document.getElementById('bgTableWrap');
+    if(showTable && bgTableWrap){
+      showTable.addEventListener('change', ()=>{
+        bgTableWrap.style.display = showTable.checked ? 'block' : 'none';
+      });
+    }
 
     // Init
-    calcBag(); calcBag2();
+    calcCRI(1); calcCRI(2);
   </script>
 </body>
 </html>
