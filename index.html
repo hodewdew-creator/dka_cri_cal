@@ -146,17 +146,7 @@
           <div class="box"><div class="label">초기 투여량</div><div class="val"><span id="bagDoseUkgh2" class="mono">-</span> U/kg/h</div></div>
           <div class="box"><div class="label">실사용 가능 용량</div><div class="val"><span id="usableVol2" class="mono">-</span> mL</div></div>
         </div>
-        <div class="hr"></div>
-        <div class="grid cols-2 mini" id="conv22">
-          <div>
-            <label>변환: mL/h → U/kg/h</label>
-            <input id="rateMl2" type="number" step="0.1" placeholder="mL/h 입력" />
-          </div>
-          <div>
-            <label>변환: U/kg/h → mL/h</label>
-            <input id="rateUkgh2" type="number" step="0.001" placeholder="U/kg/h 입력" />
-          </div>
-        </div>
+
         <div class="note" style="margin-top:6px">
           권장: 0.9% NaCl <span class="mono">250 mL</span> + Regular insulin <span class="mono">2.2 × kg</span> U 혼합.<br>
           초기 <span class="mono">10 mL/h ≈ 0.1 U/kg/h</span> (체중 의존).<br>
@@ -355,31 +345,7 @@
       }));
     }
 
-    const rateMl2 = $('rateMl2'); const rateUkgh2 = $('rateUkgh2');
-    let lock2=false;
-    function fromMl2(){
-      if(lock2) return; lock2=true;
-      const w=num(bw.value), ml=num(rateMl2.value), V=num(bagVol2.value);
-      const c=(isNaN(w)||isNaN(V)||V<=0)?NaN:(2.2*w)/V;
-      const ukgh = (isNaN(w)||w<=0||isNaN(ml)||isNaN(c)) ? NaN : (c*ml)/w;
-      rateUkgh2.value = isNaN(ukgh)? '' : ukgh.toFixed(2);
-      lock2=false;
-    }
-    function fromUkgh2(){
-      if(lock2) return; lock2=true;
-      const w=num(bw.value), ukgh=num(rateUkgh2.value), V=num(bagVol2.value);
-      const c=(isNaN(w)||isNaN(V)||V<=0)?NaN:(2.2*w)/V;
-      const ml = (isNaN(w)||w<=0||isNaN(ukgh)||isNaN(c)||c===0) ? NaN : (ukgh*w)/c;
-      rateMl2.value = isNaN(ml)? '' : ml.toFixed(1);
-      lock2=false;
-    }
-    if(rateMl2 && rateUkgh2){
-      rateMl2.addEventListener('input', fromMl2);
-      rateUkgh2.addEventListener('input', fromUkgh2);
-      [bw, bagVol2].forEach(el=> el.addEventListener('input', ()=>{
-        if(rateMl2.value!=='') fromMl2(); else if(rateUkgh2.value!=='') fromUkgh2();
-      }));
-    }
+ 
 
     // ===== Separate mini calculator (based on active CRI) =====
     const miniRateMl = $('miniRateMl');
