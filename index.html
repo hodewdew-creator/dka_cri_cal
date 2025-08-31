@@ -62,7 +62,7 @@
   <header>
     <div class="wrap">
       <h1>🐈‍⬛ Feline DKA Insulin Calculator</h1>
-      <div class="sub">(심한 탈수환자: 인슐린 CRI 시작 전 2~4시간에 걸쳐 결핍량의 약 50%를 먼저 교정하세요.)</div>
+      <div class="sub">(탈수환묘는 CRI 시작 전 최소 2~4시간에 걸쳐 결핍량의 약 50%를 먼저 교정하세요.)</div>
     </div>
   </header>
 
@@ -96,20 +96,21 @@
         <div>
           <label for="bagVol">백 용량 (mL) <span class="chip">입력</span></label>
           <input id="bagVol" type="number" step="1" value="250" />
-          <div class="note"><strong>시작 속도 :</strong> 10 mL/h</div>
-          <div class="note"><strong>시작 투여량 :</strong> 0.044 U/kg/h</div>
+          <div class="note"><strong>시작 속도 :</strong> 10 mL/h (고정) </div>
+          <div class="note"><strong>시작 투여량 :</strong> 0.044 U/kg/h (고정) </div>
         </div>
         <div class="hr"></div>
         <div class="kpi">
           <div class="box"><div class="label">백에 넣을 인슐린</div><div class="val"><span id="bagUnits" class="mono">-</span> U</div></div>
-          <div class="box"><div class="label">용액 농도</div><div class="val"><span id="bagConc" class="mono">-</span> U/mL</div></div>
+          <div class="box"><div class="label">완성된 CRI용액 농도</div><div class="val"><span id="bagConc" class="mono">-</span> U/mL</div></div>
         </div>
         <!-- 1.1 설명 노트 (요청하신 네 줄 복원) -->
         <div class="note" style="margin-top:6px">
-          • 백용량은 기본 250 mL이며, 보호자 변경 가능.<br>
-          • 시작 속도는 10 mL/h로 고정, 투여량은 0.044 U/kg/h (1.1 기준)로 고정됩니다.<br>
-          • 백용량을 2배로 변경하면, 백에 넣을 인슐린(U)도 2배로 자동 증가하여 농도와 U/kg/h는 동일하게 유지됩니다.<br>
-          • 권장 조제: 0.9% NaCl 250 mL 기준 Regular insulin 1.1 × kg U. 조제 후 라인 흡착 보정을 위해 50 mL 폐기.
+          • 백용량은 기본 250 mL이며, 사용자가 변경 가능합니다.<br>
+          • 시작속도는 10 mL/h, 시작투여량은 0.044 U/kg/h (1.1 기준)로 고정입니다.<br>
+          (백용량을 2배로 변경하면, 백에 넣을 인슐린(U)도 2배로 자동 증가하여 농도와 U/kg/h는 동일하게 유지됩니다.)<br>
+          • 권장 조제: 0.9% NaCl 250 mL 기준 Regular insulin 1.1 × kg U.
+          • 조제 후 라인 흡착 보정을 위해 50 mL 는 흘려서 폐기해주세요.
         </div>
         <!-- 변환 계산기 -->
         <div class="mini-card" id="conv11">
@@ -132,21 +133,21 @@
         <div>
           <label for="bagVol2">백 용량 (mL) <span class="chip">입력</span></label>
           <input id="bagVol2" type="number" step="1" value="250" />
-          <div class="note"><strong>시작 속도 :</strong> 10 mL/h</div>
-          <div class="note"><strong>시작 투여량 :</strong> 0.088 U/kg/h</div>
+          <div class="note"><strong>시작 속도 :</strong> 10 mL/h (고정) </div>
+          <div class="note"><strong>시작 투여량 :</strong> 0.088 U/kg/h (고정) </div>
         </div>
         <div class="hr"></div>
         <div class="kpi">
           <div class="box"><div class="label">백에 넣을 인슐린</div><div class="val"><span id="bagUnits2" class="mono">-</span> U</div></div>
           <div class="box"><div class="label">용액 농도</div><div class="val"><span id="bagConc2" class="mono">-</span> U/mL</div></div>
-          <div class="box"><div class="label">실사용 가능 용량</div><div class="val"><span id="usableVol2" class="mono">-</span> mL</div></div>
         </div>
         <!-- 2.2 설명 노트 (대응 내용) -->
         <div class="note" style="margin-top:6px">
-          • 백용량은 기본 250 mL이며, 보호자 변경 가능.<br>
-          • 시작 속도는 10 mL/h로 고정, 투여량은 0.088 U/kg/h (2.2 기준)로 고정됩니다.<br>
-          • 백용량을 2배로 변경하면, 백에 넣을 인슐린(U)도 2배로 자동 증가하여 농도와 U/kg/h는 동일하게 유지됩니다.<br>
-          • 권장 조제: 0.9% NaCl 250 mL 기준 Regular insulin 2.2 × kg U. 조제 후 라인 흡착 보정을 위해 50 mL 폐기.
+          • 백용량은 기본 250 mL이며, 사용자가 변경 가능합니다.<br>
+          • 시작속도는 10 mL/h, 시작투여량은 0.088 U/kg/h (2.2 기준)로 고정입니다.<br>
+          (백용량을 2배로 변경하면, 백에 넣을 인슐린(U)도 2배로 자동 증가하여 농도와 U/kg/h는 동일하게 유지됩니다.)<br>
+          • 권장 조제: 0.9% NaCl 250 mL 기준 Regular insulin 1.1 × kg U.
+          • 조제 후 라인 흡착 보정을 위해 50 mL 는 흘려서 폐기해주세요.
         </div>
         <!-- 변환 계산기 -->
         <div class="mini-card" id="conv22">
@@ -173,7 +174,7 @@
       </div>
     </section>
 
-    <!-- 3) BG 기반 힌트 & 속도표 -->
+    <!-- 3) BG based CRI 속도설정 -->
     <section class="card">
       <div class="title" style="display:flex;justify-content:space-between;align-items:center">
         <span>3) BG 기반 힌트 / 속도표</span>
@@ -197,7 +198,7 @@
         </table>
         <div class="note" style="margin-top:6px">노란 칸: 환자 alert & 자발 식사 가능 → CRI 중단 고려.</div>
       </div>
-      <div class="note" style="margin-top:8px">목표 BG 150~250 mg/dL, 시간당 하강폭 50~100 mg/dL 이내. 필요 시 2.5~5% 포도당 병용.</div>
+      <div class="note" style="margin-top:8px">목표 BG 150~250 mg/dL, 시간당 하락폭 50~100 mg/dL 이내. 필요시 2.5~5% 포도당 병용.</div>
     </section>
 
     <!-- 4) 전해질 보정 -->
@@ -219,8 +220,8 @@
     <section class="card">
       <div class="title">메모</div>
       <ul class="note" style="margin:8px 0 0 18px">
-        <li>CRI 속도는 절대 기준이 아닌 가이드라인입니다. 환자 상태에 맞춰 조절해주세요.</li>
-        <li>인슐린 CRI 용액은 24시간마다 새로 교체해주세요.</li>
+        <li>CRI 속도는 절대 기준이 아닌 가이드라인으로 환자 상태에 맞춰 조절해주세요.</li>
+        <li>인슐린 CRI 용액은 24시간마다 새로 조제/교체해주세요.</li>
        </ul>
     </section>
   </main>
